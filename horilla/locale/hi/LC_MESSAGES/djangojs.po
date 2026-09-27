@@ -1,0 +1,594 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Horilla\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-14 12:00+0530\n"
+"PO-Revision-Date: 2026-09-27 00:00+0000\n"
+"Last-Translator: Horilla Localization Team\n"
+"Language-Team: Hindi\n"
+"Language: hi\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "An unexpected error occurred. Please refresh the page."
+msgstr "एक अप्रत्याशित त्रुटि हुई। कृपया पेज को रीफ्रेश करें।"
+
+msgid "Do you really want to validate all the selected attendances?"
+msgstr "क्या आप वाकई सभी चयनित उपस्थितियों को सत्यापित करना चाहते हैं?"
+
+msgid "No rows are selected from Validate Attendances."
+msgstr "उपस्थिति सत्यापन में कोई पंक्ति चयनित नहीं है।"
+
+msgid "Do you really want to approve OT for all the selected attendances?"
+msgstr "क्या आप वाकई सभी चयनित उपस्थितियों के लिए ओवरटाइम स्वीकृत करना चाहते हैं?"
+
+msgid "No rows are selected from OT Attendances."
+msgstr "ओवरटाइम उपस्थिति में कोई पंक्ति चयनित नहीं है।"
+
+msgid "Do you really want to reject all the selected attendance requests?"
+msgstr "क्या आप वाकई सभी चयनित उपस्थिति अनुरोधों को अस्वीकार करना चाहते हैं?"
+
+msgid "Pending Attendance Update Request!"
+msgstr "लंबित उपस्थिति अद्यतन अनुरोध!"
+
+msgid "An attendance request exists for updating this attendance prior to validation."
+msgstr "सत्यापन से पहले इस उपस्थिति को अपडेट करने के लिए एक अनुरोध पहले से मौजूद है।"
+
+msgid "View Request"
+msgstr "अनुरोध देखें"
+
+#, fuzzy
+#| msgid "Imported Successfully!"
+msgid "Employees Imported Successfully"
+msgstr "कर्मचारी सफलतापूर्वक आयात किए गए"
+
+msgid "You have"
+msgstr "आपके पास"
+
+#, fuzzy
+#| msgid "Do you want to download the template?"
+msgid "errors. Do you want to download the error list?"
+msgstr "त्रुटियां हैं। क्या आप त्रुटि सूची डाउनलोड करना चाहते हैं?"
+
+msgid "Download error list & Skip Import"
+msgstr "त्रुटि सूची डाउनलोड करें और आयात छोड़ें"
+
+msgid "Download error list & Continue Import"
+msgstr "त्रुटि सूची डाउनलोड करें और आयात जारी रखें"
+
+msgid "Invalid File"
+msgstr "अमान्य फ़ाइल"
+
+msgid "Please upload a valid XLSX file."
+msgstr "कृपया एक मान्य XLSX फ़ाइल अपलोड करें।"
+
+msgid "Stage updated"
+msgstr "चरण अद्यतन किया गया"
+
+msgid "Failed to update sequence: "
+msgstr "अनुक्रम अद्यतन करने में विफल: "
+
+#, fuzzy
+#| msgid "Stage updated"
+msgid "Sequence updated"
+msgstr "अनुक्रम अद्यतन किया गया"
+
+msgid "Confirm Stage Change"
+msgstr "चरण परिवर्तन की पुष्टि करें"
+
+msgid "The candidate is being moved from %(from)s to the %(to)s stage. Do you want to proceed?"
+msgstr "उम्मीदवार को %(from)s से %(to)s चरण में स्थानांतरित किया जा रहा है। क्या आप आगे बढ़ना चाहते हैं?"
+
+msgid "Don't show this again in this session"
+msgstr "इस सत्र में इसे दोबारा न दिखाएं"
+
+msgid "Cannot Change Stage"
+msgstr "चरण नहीं बदला जा सकता"
+
+msgid "This move is not allowed."
+msgstr "यह कार्रवाई अनुमत नहीं है।"
+
+#, fuzzy
+#| msgid "Name of Employees"
+msgid "Employees"
+msgstr "कर्मचारी"
+
+msgid "Number of days"
+msgstr "दिनों की संख्या"
+
+msgid "Draft"
+msgstr "प्रारूप"
+
+msgid "Review Ongoing"
+msgstr "समीक्षा जारी है"
+
+#, fuzzy
+#| msgid "Confirm"
+msgid "Confirmed"
+msgstr "पुष्टि की गई"
+
+msgid "Paid"
+msgstr "भुगतान किया गया"
+
+msgid "Leave count"
+msgstr "अवकाश गणना"
+
+msgid "Do you wish to create a Leave Report?"
+msgstr "क्या आप अवकाश रिपोर्ट बनाना चाहते हैं?"
+
+msgid "Do you want to reject the selected leave requests?"
+msgstr "क्या आप चयनित अवकाश अनुरोधों को अस्वीकार करना चाहते हैं?"
+
+#, fuzzy
+#| msgid "Candidate"
+msgid "Onboarding Candidates"
+msgstr "ऑनबोर्डिंग उम्मीदवार"
+
+#, fuzzy
+#| msgid "Candidate record"
+msgid "Candidates per Stage"
+msgstr "प्रति चरण उम्मीदवार"
+
+#, fuzzy
+#| msgid "Candidate"
+msgid "Number of Candidates"
+msgstr "उम्मीदवारों की संख्या"
+
+msgid "Do you want to send the payslip by mail?"
+msgstr "क्या आप वेतन पर्ची ईमेल से भेजना चाहते हैं?"
+
+msgid "Name of Employees"
+msgstr "कर्मचारियों के नाम"
+
+msgid "Amount"
+msgstr "राशि"
+
+msgid "Objective"
+msgstr "उद्देश्य"
+
+msgid "Key Result"
+msgstr "मुख्य परिणाम"
+
+msgid "Feedback"
+msgstr "प्रतिक्रिया"
+
+msgid "Upload Completed!"
+msgstr "अपलोड पूर्ण!"
+
+msgid "Imported Successfully!"
+msgstr "सफलतापूर्वक आयात किया गया!"
+
+msgid "Please upload a file with the .xlsx extension only."
+msgstr "कृपया केवल .xlsx एक्सटेंशन वाली फ़ाइल अपलोड करें।"
+
+#, fuzzy
+#| msgid "Candidate"
+msgid "Hired Candidates"
+msgstr "नियुक्त उम्मीदवार"
+
+#, fuzzy
+#| msgid "Stage updated"
+msgid "Stage sequence updated"
+msgstr "चरण अनुक्रम अद्यतन किया गया"
+
+msgid "Dashboard"
+msgstr "डैशबोर्ड"
+
+msgid "Horilla dashboard section"
+msgstr "Horilla डैशबोर्ड अनुभाग"
+
+msgid "Mark Attendance"
+msgstr "उपस्थिति दर्ज करें"
+
+msgid "Used to mark your attendance"
+msgstr "आपकी उपस्थिति दर्ज करने के लिए उपयोग किया जाता है"
+
+msgid "Settings"
+msgstr "सेटिंग्स"
+
+msgid "Settings configurations"
+msgstr "सेटिंग्स कॉन्फ़िगरेशन"
+
+msgid "Notification"
+msgstr "सूचना"
+
+msgid "Notifications section"
+msgstr "सूचना अनुभाग"
+
+msgid "Language"
+msgstr "भाषा"
+
+msgid "Multi-Language options"
+msgstr "बहु-भाषा विकल्प"
+
+msgid "Multi-Company"
+msgstr "बहु-कंपनी"
+
+msgid "Multi-Company options"
+msgstr "बहु-कंपनी विकल्प"
+
+msgid "Profile"
+msgstr "प्रोफ़ाइल"
+
+msgid "Profile and change password options"
+msgstr "प्रोफ़ाइल और पासवर्ड बदलने के विकल्प"
+
+msgid "Dashboard Tiles"
+msgstr "डैशबोर्ड टाइलें"
+
+msgid "Horilla Dashboard Tiles"
+msgstr "Horilla डैशबोर्ड टाइलें"
+
+msgid "Dashboard Actions"
+msgstr "डैशबोर्ड कार्रवाइयां"
+
+msgid "Approve or Reject Options"
+msgstr "स्वीकृत या अस्वीकार करने के विकल्प"
+
+msgid "Add announcement"
+msgstr "घोषणा जोड़ें"
+
+msgid "Create announcement from dashboard"
+msgstr "डैशबोर्ड से घोषणा बनाएं"
+
+msgid "Quick Actions"
+msgstr "त्वरित कार्रवाइयां"
+
+msgid "Create Quick Requests"
+msgstr "त्वरित अनुरोध बनाएं"
+
+msgid "Company"
+msgstr "कंपनी"
+
+msgid "Your current company access"
+msgstr "आपकी वर्तमान कंपनी पहुंच"
+
+msgid "App"
+msgstr "ऐप"
+
+msgid "Horilla Hr Apps. eg Dashboard"
+msgstr "Horilla HR ऐप्स, जैसे डैशबोर्ड"
+
+msgid "Pipeline"
+msgstr "पाइपलाइन"
+
+msgid "Recruitment pipeline management"
+msgstr "भर्ती पाइपलाइन प्रबंधन"
+
+msgid "New Recruitment"
+msgstr "नई भर्ती"
+
+msgid "Add new recruitment"
+msgstr "नई भर्ती जोड़ें"
+
+msgid "Filter"
+msgstr "फ़िल्टर"
+
+msgid "Pipeline filter option"
+msgstr "पाइपलाइन फ़िल्टर विकल्प"
+
+msgid "Toggle View"
+msgstr "दृश्य टॉगल करें"
+
+msgid "Toggle view type"
+msgstr "दृश्य प्रकार टॉगल करें"
+
+msgid "Search"
+msgstr "खोजें"
+
+msgid "Search in candidate, recruitment and stage"
+msgstr "उम्मीदवार, भर्ती और चरण में खोजें"
+
+msgid "Filter Tag"
+msgstr "फ़िल्टर टैग"
+
+msgid "Filter tag option"
+msgstr "फ़िल्टर टैग विकल्प"
+
+msgid "Quick Filters"
+msgstr "त्वरित फ़िल्टर"
+
+msgid "Recruitment"
+msgstr "भर्ती"
+
+msgid "Add Stage"
+msgstr "चरण जोड़ें"
+
+msgid "Add new stage to recruitment"
+msgstr "भर्ती में नया चरण जोड़ें"
+
+msgid "Stage"
+msgstr "चरण"
+
+msgid "Recruitment stage"
+msgstr "भर्ती चरण"
+
+msgid "Add candidate"
+msgstr "उम्मीदवार जोड़ें"
+
+msgid "Add candidate to stage option"
+msgstr "चरण में उम्मीदवार जोड़ने का विकल्प"
+
+msgid "Candidate"
+msgstr "उम्मीदवार"
+
+msgid "Candidate record"
+msgstr "उम्मीदवार रिकॉर्ड"
+
+msgid "Rating"
+msgstr "रेटिंग"
+
+msgid "Candidate rating option"
+msgstr "उम्मीदवार रेटिंग विकल्प"
+
+msgid "Change Stage"
+msgstr "चरण बदलें"
+
+msgid "Candidate change stage option"
+msgstr "उम्मीदवार चरण परिवर्तन विकल्प"
+
+msgid "Options"
+msgstr "विकल्प"
+
+msgid "Candidate management options"
+msgstr "उम्मीदवार प्रबंधन विकल्प"
+
+msgid "visible"
+msgstr ""
+
+msgid "bgcolor"
+msgstr ""
+
+msgid "bordercolor"
+msgstr ""
+
+msgid "borderwidth"
+msgstr ""
+
+msgid "thickness"
+msgstr ""
+
+msgid "autorange"
+msgstr ""
+
+msgid "range"
+msgstr ""
+
+msgid "x"
+msgstr ""
+
+msgid "y"
+msgstr ""
+
+msgid "minor"
+msgstr ""
+
+msgid "label"
+msgstr ""
+
+msgid "arrowlen"
+msgstr ""
+
+msgid "source"
+msgstr ""
+
+msgid "target"
+msgstr ""
+
+msgid "value"
+msgstr ""
+
+msgid "line.color"
+msgstr ""
+
+msgid "line.width"
+msgstr ""
+
+msgid "hoverinfo"
+msgstr ""
+
+msgid "hovertemplate"
+msgstr ""
+
+msgid "color"
+msgstr ""
+
+msgid "hovercolor"
+msgstr ""
+
+msgid "customdata"
+msgstr ""
+
+msgid "All your company and base configurations"
+msgstr "आपकी सभी कंपनी और आधार कॉन्फ़िगरेशन"
+
+msgid "Settings Options"
+msgstr "सेटिंग्स विकल्प"
+
+msgid "Settings menu bar"
+msgstr "सेटिंग्स मेनू बार"
+
+msgid "Settings View"
+msgstr "सेटिंग्स दृश्य"
+
+msgid "Selected settings view"
+msgstr "चयनित सेटिंग्स दृश्य"
+
+msgid "Project: "
+msgstr "प्रोजेक्ट: "
+
+msgid "watchFile"
+msgstr ""
+
+msgid "watchDirectory"
+msgstr ""
+
+msgid "getCompletionsAtPosition: getCompletionEntriesFromSymbols: "
+msgstr ""
+
+msgid "placeOpenBraceOnNewLineForControlBlocks"
+msgstr ""
+
+msgid "placeOpenBraceOnNewLineForFunctions"
+msgstr ""
+
+msgid "punc"
+msgstr ""
+
+msgid "name"
+msgstr ""
+
+msgid "keyword"
+msgstr ""
+
+msgid "arrow"
+msgstr ""
+
+msgid "operator"
+msgstr ""
+
+msgid "Expected "
+msgstr ""
+
+msgid "I"
+msgstr ""
+
+msgid "E"
+msgstr ""
+
+msgid "X"
+msgstr ""
+
+msgid "B"
+msgstr ""
+
+msgid "Invalid generatedCharacter found"
+msgstr ""
+
+msgid "Invalid sourceIndex found"
+msgstr ""
+
+msgid "Unsupported Format: No entries after sourceIndex"
+msgstr ""
+
+msgid "Invalid sourceLine found"
+msgstr ""
+
+msgid "Unsupported Format: No entries after sourceLine"
+msgstr ""
+
+msgid "Invalid sourceCharacter found"
+msgstr ""
+
+msgid "Invalid nameIndex found"
+msgstr ""
+
+msgid "Unsupported Error Format: Entries after nameIndex"
+msgstr ""
+
+msgid "collectAutoImports"
+msgstr ""
+
+msgid "continuePreviousIncompleteResponse"
+msgstr ""
+
+msgid "TypeRoots version has changed; provide new program"
+msgstr ""
+
+msgid "getIndentationAtPosition: getCurrentSourceFile: "
+msgstr ""
+
+msgid "getIndentationAtPosition: computeIndentation  : "
+msgstr ""
+
+msgid "Program"
+msgstr ""
+
+msgid "BlockStatement"
+msgstr ""
+
+msgid "close"
+msgstr ""
+
+msgid "Confirm"
+msgstr "पुष्टि करें"
+
+msgid "Close"
+msgstr "बंद करें"
+
+msgid "Cancel"
+msgstr "रद्द करें"
+
+msgid "Selected"
+msgstr "चयनित"
+
+msgid "Uploading..."
+msgstr "अपलोड हो रहा है..."
+
+msgid "No Records found"
+msgstr "कोई रिकॉर्ड नहीं मिला"
+
+msgid "Ok"
+msgstr "ठीक है"
+
+msgid "Do you want to download the excel file?"
+msgstr "क्या आप एक्सेल फ़ाइल डाउनलोड करना चाहते हैं?"
+
+msgid "Do you want to download the template?"
+msgstr "क्या आप टेम्पलेट डाउनलोड करना चाहते हैं?"
+
+msgid "No rows are selected from the records."
+msgstr "रिकॉर्ड से कोई पंक्ति चयनित नहीं है।"
+
+msgid "Do you really want to delete all the selected records?"
+msgstr "क्या आप वाकई सभी चयनित रिकॉर्ड हटाना चाहते हैं?"
+
+msgid "Do you really want to archive all the selected records?"
+msgstr "क्या आप वाकई सभी चयनित रिकॉर्ड संग्रहीत करना चाहते हैं?"
+
+msgid "Do you really want to approve all the selected requests?"
+msgstr "क्या आप वाकई सभी चयनित अनुरोध स्वीकृत करना चाहते हैं?"
+
+msgid "Do you really want to unarchive all the selected records?"
+msgstr "क्या आप वाकई सभी चयनित रिकॉर्ड को असंग्रहीत करना चाहते हैं?"
+
+msgid "Total vacancy is %(vacancy)s."
+msgstr "कुल रिक्ति %(vacancy)s है।"
+
+msgid "Are you sure to change the candidate from %(from)s stage to %(to)s stage"
+msgstr "क्या आप वाकई उम्मीदवार को %(from)s चरण से %(to)s चरण में बदलना चाहते हैं"
+
+msgid "Retry"
+msgstr "पुनः प्रयास करें"
+
+msgid "Something went wrong while loading this data."
+msgstr "यह डेटा लोड करते समय कुछ गलत हो गया।"
+
+msgid "Request failed (status %(status)s)."
+msgstr "अनुरोध विफल रहा (स्थिति %(status)s)।"
+
+msgid "The request took too long to respond."
+msgstr "अनुरोध का उत्तर देने में बहुत अधिक समय लगा।"
+
+msgid "Some selected requests have already been approved."
+msgstr "कुछ चयनित अनुरोध पहले ही स्वीकृत किए जा चुके हैं।"
+
+msgid "Some selected requests have already been rejected."
+msgstr "कुछ चयनित अनुरोध पहले ही अस्वीकार किए जा चुके हैं।"
+
+msgid "Do you really want to delete all the selected attendances?"
+msgstr "क्या आप वाकई सभी चयनित उपस्थितियों को हटाना चाहते हैं?"
+
+msgid "Do you really want to delete this employee?"
+msgstr "क्या आप वाकई इस कर्मचारी को हटाना चाहते हैं?"
+
+msgid "No rows are selected for deleting attendances."
+msgstr "उपस्थिति हटाने के लिए कोई पंक्ति चयनित नहीं है।"
