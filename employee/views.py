@@ -82,6 +82,7 @@ from employee.forms import (
     EmployeeForm,
     EmployeeGeneralSettingPrefixForm,
     EmployeeNoteForm,
+    EmployeePasswordForm,
     EmployeeTagForm,
     EmployeeWorkInformationForm,
     EmployeeWorkInformationUpdateForm,
@@ -2176,6 +2177,9 @@ def employee_update(request, obj_id):
     bank_info = EmployeeBankDetails.objects.filter(employee_id=employee).first()
     work_form = EmployeeWorkInformationForm()
     bank_form = EmployeeBankDetailsUpdateForm()
+    password_form = None
+    if request.user.has_perm("password.change_password"):
+        password_form = EmployeePasswordForm(user=employee.employee_user_id)
     if work_info is not None:
         work_form = EmployeeWorkInformationForm(instance=work_info)
     if bank_info is not None:
@@ -2186,11 +2190,23 @@ def employee_update(request, obj_id):
             if form.is_valid():
                 form.save()
                 messages.success(request, _("Employee updated."))
-    return render(
-        request,
-        "employee_personal_info/employee_update_form.html",
-        {"form": form, "work_form": work_form, "bank_form": bank_form},
-    )
+    if password_form:
+        return render(
+            request,
+            "employee_personal_info/employee_update_form.html",
+            {
+                "form": form,
+                "work_form": work_form,
+                "bank_form": bank_form,
+                "password_form": password_form,
+            },
+        )
+    else:
+        return render(
+            request,
+            "employee_personal_info/employee_update_form.html",
+            {"form": form, "work_form": work_form, "bank_form": bank_form},
+        )
 
 
 @login_required
@@ -2694,6 +2710,48 @@ def employee_work_information_delete(request, obj_id):
         messages.error(request, _("You cannot delete this Employee work information"))
 
     return redirect("/employee/employee-work-information-view")
+
+
+@login_required
+@manager_can_enter("employee.change_employee")
+@require_http_methods(["POST"])
+def employee_password_view_update(request, obj_id):
+    """
+    Updates an employee's password from the single view template.
+    args:
+        obj_id : employee instance id
+    """
+    employee = Employee.objects.get(id=obj_id)
+    user = employee.employee_user_id
+
+    form = EmployeeForm(instance=employee)
+    bank_form = EmployeeBankDetailsUpdateForm()
+    bank_form_instance = EmployeeBankDetails.objects.filter(
+        employee_id=employee
+    ).first()
+    if bank_form_instance is not None:
+        bank_form = EmployeeBankDetailsUpdateForm(
+            instance=employee.employee_bank_details
+        )
+
+    password_form = EmployeePasswordForm(user=user, data=request.POST)
+
+    if password_form.is_valid():
+        new_password = password_form.cleaned_data.get("new_password")
+        if new_password:
+            user.set_password(new_password)
+            user.save(update_fields=["password"])
+            messages.success(request, _("Password updated successfully"))
+
+    return render(
+        request,
+        "employee_personal_info/employee_update_form.html",
+        {
+            "form": form,
+            "bank_form": bank_form,
+            "password_form": password_form,
+        },
+    )
 
 
 @login_required

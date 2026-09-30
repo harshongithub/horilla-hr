@@ -9,25 +9,11 @@ from django.urls import path
 from base.templatetags.horillafilters import app_installed
 from base.views import object_delete, object_duplicate
 from employee import dashboard as emp_dashboard
-from employee import (
-    employee_settings,
-    not_in_out_dashboard,
-    policies,
-    requests,
-    views,
-    work_schedules,
-)
-from employee.cbv import (
-    action_type,
-    allocations,
-    disciplinary_actions,
-    document_request,
-    employee_profile,
-    employee_tags,
-    employees,
-    policy_cbv,
-    requests_nav,
-)
+from employee import (employee_settings, not_in_out_dashboard, policies,
+                      requests, views, work_schedules)
+from employee.cbv import (action_type, allocations, disciplinary_actions,
+                          document_request, employee_profile, employee_tags,
+                          employees, policy_cbv, requests_nav)
 from employee.forms import DisciplinaryActionForm
 from employee.models import DisciplinaryAction, Employee, EmployeeTag
 from horilla_documents.models import DocumentRequest
@@ -242,6 +228,11 @@ urlpatterns = [
         "employee-bank-details-view-update/<int:obj_id>/",
         views.employee_bank_details_view_update,
         name="employee-bank-details-view-update",
+    ),
+    path(
+        "employee-password-change/<int:obj_id>/",
+        views.employee_password_view_update,
+        name="employee-password-change",
     ),
     path(
         "employee-work-info-view-update/<int:obj_id>/",

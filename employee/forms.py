@@ -34,24 +34,16 @@ from django.utils.translation import gettext_lazy as _
 
 from base.methods import eval_validate, reload_queryset
 from employee.filters import EmployeeFilter
-from employee.models import (
-    Actiontype,
-    BonusPoint,
-    DisciplinaryAction,
-    Employee,
-    EmployeeBankDetails,
-    EmployeeGeneralSetting,
-    EmployeeNote,
-    EmployeeTag,
-    EmployeeWorkInformation,
-    NoteFiles,
-    Policy,
-    PolicyMultipleFile,
-)
+from employee.models import (Actiontype, BonusPoint, DisciplinaryAction,
+                             Employee, EmployeeBankDetails,
+                             EmployeeGeneralSetting, EmployeeNote, EmployeeTag,
+                             EmployeeWorkInformation, NoteFiles, Policy,
+                             PolicyMultipleFile)
 from horilla import horilla_middlewares
 from horilla_audit.models import AccountBlockUnblock
 from horilla_auth.models import HorillaUser
-from horilla_widgets.widgets.horilla_multi_select_field import HorillaMultiSelectField
+from horilla_widgets.widgets.horilla_multi_select_field import \
+    HorillaMultiSelectField
 from horilla_widgets.widgets.select_widgets import HorillaMultiSelectWidget
 
 logger = logging.getLogger(__name__)
@@ -694,6 +686,53 @@ class EmployeeNoteForm(ModelForm):
         if commit:
             instance.note_files.add(*multiple_attachment_ids)
         return instance, multiple_attachment_ids
+
+
+class EmployeePasswordForm(forms.Form):
+    new_password = forms.CharField(
+        required=False,
+        strip=False,
+        widget=forms.PasswordInput(
+            attrs={
+                "autocomplete": "new-password",
+                "placeholder": _("Enter New Password"),
+                "class": "oh-input oh-input--password w-100 mb-2",
+            }
+        ),
+    )
+    confirm_password = forms.CharField(
+        required=False,
+        strip=False,
+        widget=forms.PasswordInput(
+            attrs={
+                "autocomplete": "new-password",
+                "placeholder": _("Confirm New Password"),
+                "class": "oh-input oh-input--password w-100 mb-2",
+            }
+        ),
+    )
+
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        new_password = cleaned_data.get("new_password")
+        confirm_password = cleaned_data.get("confirm_password")
+
+        if not new_password and not confirm_password:
+            return cleaned_data
+
+        if new_password != confirm_password:
+            raise forms.ValidationError(_("Passwords do not match"))
+
+        try:
+            validate_password(new_password, user=self.user)
+        except DjangoValidationError as error:
+            raise forms.ValidationError(error.messages)
+
+        return cleaned_data
 
 
 class MultipleFileInput(forms.ClearableFileInput):

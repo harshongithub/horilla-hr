@@ -1856,7 +1856,8 @@
     "whatsapp.delete_whatsappcredientials",
     "whatsapp.delete_whatsappflowdetails",
     "whatsapp.view_whatsappcredientials",
-    "whatsapp.view_whatsappflowdetails"
+    "whatsapp.view_whatsappflowdetails",
+    "password.change_password",
   ],
   "aiden.murphy@horilla.com": [],
   "alexander.smith@horilla.com": [
@@ -5043,7 +5044,8 @@
     "whatsapp.delete_whatsappcredientials",
     "whatsapp.delete_whatsappflowdetails",
     "whatsapp.view_whatsappcredientials",
-    "whatsapp.view_whatsappflowdetails"
+    "whatsapp.view_whatsappflowdetails",
+    "password.change_password",
   ],
   "hunter.butler@horilla.com": [],
   "isaac.torres@horilla.com": [],
