@@ -299,9 +299,12 @@ class EmployeeListAPIView(APIView):
         search = request.query_params.get("search")
 
         # Start with a base queryset with only required fields
-        employees_queryset = Employee.objects.only(
-            "id", "employee_first_name", "employee_last_name"
-        )
+        # employees_queryset = Employee.objects.only(
+        #     "id", "employee_first_name", "employee_last_name"
+        # )
+
+        # default none queryset, if user have permission for attendance then only the subordinates will be returned to him
+        employees_queryset =  Employee.objects.none()
 
         # Permission-based filtering.
         #
@@ -315,16 +318,14 @@ class EmployeeListAPIView(APIView):
         #
         # Honouring the same grant, additively: everything that resolved
         # before still resolves, this only adds the accessibility path.
-        if user.has_perm("employee.view_employee") or directory_is_accessible(request):
-            pass  # employees_queryset is already all employees
-        else:
+        if user.has_perm("employee.view_employee"):
             subordinate_qs = user.employee_get.get_subordinate_employees()
             if subordinate_qs.exists():
                 employees_queryset = subordinate_qs.only(
                     "id", "employee_first_name", "employee_last_name"
                 )
-            else:
-                employees_queryset = employees_queryset.filter(id=user.employee_get.id)
+            # else:
+            #     employees_queryset = employees_queryset.filter(id=user.employee_get.id)
 
         # Apply search filter if provided
         if search:
