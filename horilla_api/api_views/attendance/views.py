@@ -896,9 +896,9 @@ class OfflineEmployeesListView(APIView):
         ).values_list("employee_id", flat=True)
 
         # Superusers or users with view permission see all employees
-        if user.has_perm("employee.view_employee"):
-            base_queryset = Employee.objects.all()
-        elif managed_employee_ids.exists():
+        # if user.has_perm("employee.view_employee"):
+        #     base_queryset = Employee.objects.all()
+        if managed_employee_ids.exists():
             base_queryset = Employee.objects.filter(id__in=managed_employee_ids)
         else:
             return Response(

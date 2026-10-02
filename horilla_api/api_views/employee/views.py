@@ -1123,8 +1123,8 @@ class EmployeeSelectorView(APIView):
             employees = Employee.objects.filter(
                 Q(pk=employee.pk) | Q(employee_work_info__reporting_manager_id=employee)
             )
-        if request.user.has_perm("employee.view_employee"):
-            employees = Employee.objects.all()
+        # if request.user.has_perm("employee.view_employee"):
+        #     employees = Employee.objects.all()
 
         paginator = HorillaPageNumberPagination()
         page = paginator.paginate_queryset(employees, request)
