@@ -863,7 +863,7 @@ def bulk_create_work_info_import(success_lists):
         work_type_obj = existing_work_types.get(work_info.get("Work Type"))
         employee_type_obj = existing_employee_types.get(work_info.get("Employee Type"))
         shift_obj = existing_shifts.get(work_info.get("Shift"))
-        reporting_manager = work_info.get("Reporting Manager")
+        reporting_manager = str(work_info.get("Reporting Manager"))
         reporting_manager_obj = None
         if isinstance(reporting_manager, str) and " " in reporting_manager:
             if reporting_manager in reporting_manager_dict:
