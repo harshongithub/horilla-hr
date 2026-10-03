@@ -530,12 +530,11 @@ def optimize_reporting_manager_lookup():
     single database query, and creates a dictionary for quick lookups based
     on the full name of the reporting managers.
     """
-    employees = Employee.objects.entire()
-
-    employee_dict = {
-        employee.phone: employee
-        for employee in employees
-    }
+    employee_dict = {}
+    for employee in Employee.objects.entire():
+        key = normalize_phone(employee.phone)
+        if key:
+            employee_dict.setdefault(key, employee)
     return employee_dict
 
 
@@ -863,11 +862,10 @@ def bulk_create_work_info_import(success_lists):
         work_type_obj = existing_work_types.get(work_info.get("Work Type"))
         employee_type_obj = existing_employee_types.get(work_info.get("Employee Type"))
         shift_obj = existing_shifts.get(work_info.get("Shift"))
-        reporting_manager = str(work_info.get("Reporting Manager"))
         reporting_manager_obj = None
-        if isinstance(reporting_manager, str) and " " in reporting_manager:
-            if reporting_manager in reporting_manager_dict:
-                reporting_manager_obj = reporting_manager_dict[reporting_manager]
+        manager_phone = normalize_phone(work_info.get("Reporting Manager"))
+        if manager_phone:
+            reporting_manager_obj = reporting_manager_dict.get(manager_phone)
 
         company_obj = existing_companies.get(work_info.get("Company"))
         location = work_info.get("Location")
