@@ -533,7 +533,7 @@ def optimize_reporting_manager_lookup():
     employees = Employee.objects.entire()
 
     employee_dict = {
-        f"{employee.employee_first_name} {employee.employee_last_name}": employee
+        employee.phone: employee
         for employee in employees
     }
     return employee_dict
