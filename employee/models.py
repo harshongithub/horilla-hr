@@ -95,7 +95,7 @@ class Employee(models.Model):
         upload_to=upload_path, null=True, blank=True, verbose_name=_("Profile Image")
     )
     email = models.EmailField(max_length=254, unique=True)
-    phone = models.CharField(max_length=25, validators=[phone_validator])
+    phone = models.CharField(max_length=25, validators=[phone_validator], null=True, blank=True)
     address = models.TextField(max_length=200, blank=True, null=True)
     country = models.CharField(max_length=100, blank=True, null=True)
     state = models.CharField(max_length=100, null=True, blank=True)
@@ -775,7 +775,7 @@ class Employee(models.Model):
         if employee.employee_user_id is None:
             # Create user if no corresponding user exists
             username = self.email
-            password = str(self.phone)
+            password = str(self.phone) if self.phone else None
 
             user = HorillaUser.objects.create_user(
                 username=username,

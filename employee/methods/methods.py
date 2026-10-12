@@ -25,6 +25,7 @@ from base.models import (
 )
 from employee.models import Employee, EmployeeWorkInformation
 from horilla_auth.models import HorillaUser
+from django.contrib.auth.hashers import make_password
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +75,16 @@ def chunked(iterable, size):
 
 
 def normalize_phone(phone):
+    if phone is None:
+        return ""
+    if isinstance(phone, float):
+        if phone != phone:            # NaN
+            return ""
+        if phone.is_integer():
+            phone = int(phone)
     phone = str(phone).strip()
+    if phone.lower() in ("", "none", "nan"):
+        return ""
     if phone.startswith("+"):
         return "+" + re.sub(r"\D", "", phone[1:])
     return re.sub(r"\D", "", phone)
@@ -333,7 +343,7 @@ def process_employee_records(data_frame):
             save = False
 
         # Phone validation
-        if not phone_regex.match(phone):
+        if phone and not phone_regex.match(phone):
             errors["Phone Error"] = "Invalid phone number format."
             save = False
 
@@ -404,7 +414,7 @@ def process_employee_records(data_frame):
 
         # Final processing
         if save:
-            emp["Phone"] = phone
+            emp["Phone"] = phone or None
             emp["Date Joining"] = joining_date
             emp["Contract End Date"] = contract_end_date
             success_list.append(emp)
@@ -445,7 +455,7 @@ def bulk_create_user_import(success_lists):
         HorillaUser(
             username=row["Email"],
             email=row["Email"],
-            password=str(row["Phone"]).strip(),
+            password=str(row["Phone"]).strip() if row.get("Phone") else make_password(None),
             is_superuser=False,
         )
         for row in success_lists
