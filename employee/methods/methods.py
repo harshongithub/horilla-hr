@@ -10,22 +10,16 @@ from itertools import chain, groupby
 
 import pandas as pd
 from django.apps import apps
+from django.conf import settings
+from django.contrib.auth.hashers import make_password
 from django.db import connection, models, transaction
 from django.utils.translation import gettext as _
 
 from base.context_processors import get_initial_prefix
-from base.models import (
-    Company,
-    Department,
-    EmployeeShift,
-    EmployeeType,
-    JobPosition,
-    JobRole,
-    WorkType,
-)
+from base.models import (Company, Department, EmployeeShift, EmployeeType,
+                         JobPosition, JobRole, WorkType)
 from employee.models import Employee, EmployeeWorkInformation
 from horilla_auth.models import HorillaUser
-from django.contrib.auth.hashers import make_password
 
 logger = logging.getLogger(__name__)
 
@@ -74,20 +68,66 @@ def chunked(iterable, size):
         yield iterable[i : i + size]
 
 
+def is_blank(value):
+    """True for None, NaN/NaT, and empty or 'nan'/'none' strings from Excel."""
+    if value is None:
+        return True
+    try:
+        if pd.isnull(value):
+            return True
+    except (TypeError, ValueError):
+        pass
+    return str(value).strip().lower() in ("", "nan", "none", "nat")
+
+
 def normalize_phone(phone):
-    if phone is None:
+    """Digits only (keeps a leading +). Returns "" for blank/NaN cells."""
+    if is_blank(phone):
         return ""
-    if isinstance(phone, float):
-        if phone != phone:            # NaN
-            return ""
-        if phone.is_integer():
-            phone = int(phone)
     phone = str(phone).strip()
-    if phone.lower() in ("", "none", "nan"):
-        return ""
+    if re.fullmatch(r"\d+\.0+", phone):
+        phone = phone.split(".")[0]
     if phone.startswith("+"):
         return "+" + re.sub(r"\D", "", phone[1:])
     return re.sub(r"\D", "", phone)
+
+
+def row_email(row):
+    """Lower-cased email from an import row, or "" when the cell is empty."""
+    value = row.get("Email")
+    return "" if is_blank(value) else str(value).strip().lower()
+
+
+def row_username(row):
+    """
+    Django username for an import row: the email for login staff, and a
+    deterministic placeholder for staff without an email. It has to be
+    deterministic because the later steps find the user rows again by username.
+    """
+    email = row_email(row)
+    return email or f"nologin-{str(row['Badge ID']).strip()}"
+
+
+def row_can_login(row):
+    return bool(row_email(row))
+
+
+def row_password(row):
+    """
+    Login staff with a phone: the phone as the first password (hashed later by
+    set_initial_password). Everyone else: an unusable password, which is what
+    Google-only managers and non-login staff need.
+    """
+    if (
+        row_can_login(row)
+        and row.get("Phone")
+        and not getattr(settings, "GOOGLE_OAUTH_ONLY", False)
+    ):
+        return str(row["Phone"]).strip()
+    return make_password(None)  # "!" + random: can never be used to log in
+
+
+_HAS_LOGIN_FIELD = any(f.name == "has_login" for f in Employee._meta.get_fields())
 
 
 def import_valid_date(date_value, field_label, errors_dict, error_key):
@@ -299,14 +339,14 @@ def process_employee_records(data_frame):
         save = True
         gender = emp.get("Gender")
 
-        email = str(emp.get("Email", "")).strip().lower()
+        email = row_email(emp)  # "" when empty: now allowed
         raw_phone = emp.get("Phone", "")
         phone = normalize_phone(raw_phone)
         badge_id = clean_badge_id(emp.get("Badge ID"))
         first_name = emp.get("First Name")
         last_name = emp.get("Last Name")
         address = emp.get("Address")
-        gender = str(gender).strip().lower() if gender else None
+        gender = None if is_blank(gender) else str(gender).strip().lower()
         company = emp.get("Company")
         basic_salary = emp.get("Basic Salary")
         salary_hour = emp.get("Salary Hour")
@@ -332,8 +372,8 @@ def process_employee_records(data_frame):
             )
             save = False
 
-        # Email validation
-        if not email or not email_regex.match(email):
+        # Email validation: optional, but must be valid when given
+        if email and not email_regex.match(email):
             errors["Email Error"] = "Invalid email address."
             save = False
 
@@ -342,7 +382,7 @@ def process_employee_records(data_frame):
             errors["First Name Error"] = "First name cannot be empty."
             save = False
 
-        # Phone validation
+        # Phone validation: optional, but must be valid when given
         if phone and not phone_regex.match(phone):
             errors["Phone Error"] = "Invalid phone number format."
             save = False
@@ -362,22 +402,28 @@ def process_employee_records(data_frame):
             emp["Badge ID"] = badge_id
             seen_badge_ids.add(badge_id)
 
-        # Username/email uniqueness
-        if email in seen_usernames:
-            errors["User ID Error"] = "User with this email already exists."
-            save = False
-        else:
-            seen_usernames.add(email)
-
-        # Name+email uniqueness
-        name_email_tuple = (first_name, last_name, email)
-        if name_email_tuple in seen_name_emails:
-            errors["Name and Email Error"] = (
-                "This employee already exists in the system."
+        # Username uniqueness (email, or the nologin-<badge> placeholder)
+        username = email or (f"nologin-{badge_id}" if badge_id else "")
+        if username and username in seen_usernames:
+            errors["User ID Error"] = (
+                "User with this email already exists."
+                if email
+                else "A user for this badge ID already exists."
             )
             save = False
-        else:
-            seen_name_emails.add(name_email_tuple)
+        elif username:
+            seen_usernames.add(username)
+
+        # Name+email uniqueness (only meaningful when there is an email)
+        if email:
+            name_email_tuple = (first_name, last_name, email)
+            if name_email_tuple in seen_name_emails:
+                errors["Name and Email Error"] = (
+                    "This employee already exists in the system."
+                )
+                save = False
+            else:
+                seen_name_emails.add(name_email_tuple)
 
         # Gender validation
         if gender and gender not in allowed_genders:
@@ -415,6 +461,7 @@ def process_employee_records(data_frame):
         # Final processing
         if save:
             emp["Phone"] = phone or None
+            emp["Email"] = email or None
             emp["Date Joining"] = joining_date
             emp["Contract End Date"] = contract_end_date
             success_list.append(emp)
@@ -433,7 +480,7 @@ def bulk_create_user_import(success_lists):
     Returns:
         list: A list of created HorillaUser instances. If no new users are created, returns an empty list.
     """
-    emails = [row["Email"] for row in success_lists]
+    emails = [row_username(row) for row in success_lists]
     existing_usernames = (
         set(
             HorillaUser.objects.filter(username__in=emails).values_list(
@@ -453,13 +500,13 @@ def bulk_create_user_import(success_lists):
 
     users_to_create = [
         HorillaUser(
-            username=row["Email"],
-            email=row["Email"],
-            password=str(row["Phone"]).strip() if row.get("Phone") else make_password(None),
+            username=row_username(row),
+            email=row_email(row),
+            password=row_password(row),
             is_superuser=False,
         )
         for row in success_lists
-        if row["Email"] not in existing_usernames
+        if row_username(row) not in existing_usernames
     ]
 
     created_users = []
@@ -476,7 +523,7 @@ def bulk_create_employee_import(success_lists):
     Creates Employee instances in bulk based on imported data.
     Uses adaptive chunking for compatibility with SQLite, avoids chunking in PostgreSQL.
     """
-    emails = [row["Email"] for row in success_lists]
+    emails = [row_username(row) for row in success_lists]
     is_postgres = connection.vendor == "postgresql"
 
     existing_users = {
@@ -491,19 +538,24 @@ def bulk_create_employee_import(success_lists):
         )
     }
 
-    employees_to_create = [
-        Employee(
-            employee_user_id=existing_users[row.get("Email")],
+    def build_employee(row):
+        extra = {"has_login": row_can_login(row)} if _HAS_LOGIN_FIELD else {}
+        return Employee(
+            employee_user_id=existing_users[row_username(row)],
             badge_id=row.get("Badge ID"),
             employee_first_name=row.get("First Name"),
             employee_last_name=row.get("Last Name"),
             address=row.get("Address"),
-            email=row.get("Email"),
-            phone=row.get("Phone"),
+            email=row_email(row) or None,  # NULL, never "", so unique works
+            phone=row.get("Phone") or None,
             gender=row.get("Gender").lower() if row.get("Gender") else None,
+            **extra,
         )
+
+    employees_to_create = [
+        build_employee(row)
         for row in success_lists
-        if row["Email"] in existing_users
+        if row_username(row) in existing_users
     ]
 
     created_employees = []
@@ -524,8 +576,15 @@ def set_initial_password(employees):
     logger.info("started to set initial password")
     for employee in employees:
         try:
-            employee.employee_user_id.set_password(str(employee.phone))
-            employee.employee_user_id.save()
+            # Only login staff with a phone get the phone as first password.
+            # Everyone else keeps the unusable password set at creation.
+            if (
+                employee.email
+                and employee.phone
+                and not getattr(settings, "GOOGLE_OAUTH_ONLY", False)
+            ):
+                employee.employee_user_id.set_password(str(employee.phone))
+                employee.employee_user_id.save()
         except Exception as e:
             logger.error(f"falied to set initial password for {employee}")
     logger.info("initial password configured")
@@ -541,11 +600,30 @@ def optimize_reporting_manager_lookup():
     on the full name of the reporting managers.
     """
     employee_dict = {}
-    for employee in Employee.objects.entire():
+    employees = list(Employee.objects.entire())
+    # Priority: phone, then email, then badge ID. The three key shapes cannot
+    # collide except a numeric badge ID equal to a phone, where phone wins.
+    for employee in employees:
         key = normalize_phone(employee.phone)
         if key:
             employee_dict.setdefault(key, employee)
+    for employee in employees:
+        if employee.email:
+            employee_dict.setdefault(employee.email.strip().lower(), employee)
+    for employee in employees:
+        if employee.badge_id:
+            employee_dict.setdefault(str(employee.badge_id).strip().lower(), employee)
     return employee_dict
+
+
+def find_reporting_manager(cell, manager_dict):
+    """Resolve the "Reporting Manager" cell: phone, email or badge ID."""
+    if is_blank(cell):
+        return None
+    raw = str(cell).strip()
+    if "@" in raw:
+        return manager_dict.get(raw.lower())
+    return manager_dict.get(normalize_phone(raw)) or manager_dict.get(raw.lower())
 
 
 def bulk_create_department_import(success_lists):
@@ -853,7 +931,7 @@ def bulk_create_work_info_import(success_lists):
         if not employee_obj:
             continue
 
-        email = work_info["Email"]
+        email = row_email(work_info) or None
         employee_work_info = existing_employee_work_infos.get(employee_obj)
         department_obj = existing_departments.get(work_info.get("Department"))
 
@@ -872,10 +950,9 @@ def bulk_create_work_info_import(success_lists):
         work_type_obj = existing_work_types.get(work_info.get("Work Type"))
         employee_type_obj = existing_employee_types.get(work_info.get("Employee Type"))
         shift_obj = existing_shifts.get(work_info.get("Shift"))
-        reporting_manager_obj = None
-        manager_phone = normalize_phone(work_info.get("Reporting Manager"))
-        if manager_phone:
-            reporting_manager_obj = reporting_manager_dict.get(manager_phone)
+        reporting_manager_obj = find_reporting_manager(
+            work_info.get("Reporting Manager"), reporting_manager_dict
+        )
 
         company_obj = existing_companies.get(work_info.get("Company"))
         location = work_info.get("Location")

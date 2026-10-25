@@ -16,7 +16,7 @@ from django import forms
 class YourForm(forms.Form):
     field_name = forms.CharField()
 
-    def clean_field_name(self):
+    def _field_name(self):
         # Custom validation logic goes here
         pass
 """
@@ -238,9 +238,15 @@ class EmployeeForm(ModelForm):
         context = {"form": self}
         return render_to_string("employee/create_form/personal_info_as_p.html", context)
 
+    def clean_aadhaar_number(self):
+        value = self.cleaned_data.get("aadhaar_number") or ""
+        return re.sub(r"[\s-]", "", value) or None
+
     def clean(self):
         super().clean()
-        email = self.cleaned_data["email"]
+        email = self.cleaned_data.get("email")
+        if not email:
+            return
         query = Employee.objects.entire().filter(email=email)
         if self.instance and self.instance.id:
             query = query.exclude(id=self.instance.id)

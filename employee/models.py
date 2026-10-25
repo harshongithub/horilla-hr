@@ -5,6 +5,8 @@ This module is used to register models for employee app
 
 """
 
+import re
+import uuid
 import xml.etree.ElementTree as ET
 from datetime import date, datetime, timedelta
 
@@ -25,16 +27,8 @@ from PIL import Image
 
 from accessibility.accessibility import ACCESSBILITY_FEATURE
 from base.horilla_company_manager import HorillaCompanyManager
-from base.models import (
-    Company,
-    Department,
-    EmployeeShift,
-    EmployeeType,
-    JobPosition,
-    JobRole,
-    WorkType,
-    validate_time_format,
-)
+from base.models import (Company, Department, EmployeeShift, EmployeeType,
+                         JobPosition, JobRole, WorkType, validate_time_format)
 from employee.methods.duration_methods import format_time, strtime_seconds
 from horilla import horilla_middlewares
 from horilla.horilla_middlewares import _thread_locals
@@ -61,6 +55,56 @@ phone_validator = RegexValidator(
 )
 
 
+# helpers for the adhar card varification field
+_VERHOEFF_D = [
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    [1, 2, 3, 4, 0, 6, 7, 8, 9, 5],
+    [2, 3, 4, 0, 1, 7, 8, 9, 5, 6],
+    [3, 4, 0, 1, 2, 8, 9, 5, 6, 7],
+    [4, 0, 1, 2, 3, 9, 5, 6, 7, 8],
+    [5, 9, 8, 7, 6, 0, 4, 3, 2, 1],
+    [6, 5, 9, 8, 7, 1, 0, 4, 3, 2],
+    [7, 6, 5, 9, 8, 2, 1, 0, 4, 3],
+    [8, 7, 6, 5, 9, 3, 2, 1, 0, 4],
+    [9, 8, 7, 6, 5, 4, 3, 2, 1, 0],
+]
+_VERHOEFF_P = [
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    [1, 5, 7, 6, 2, 8, 3, 0, 9, 4],
+    [5, 8, 0, 3, 7, 9, 6, 1, 4, 2],
+    [8, 9, 1, 6, 0, 4, 3, 5, 2, 7],
+    [9, 4, 5, 3, 1, 2, 6, 8, 7, 0],
+    [4, 2, 8, 6, 5, 7, 3, 9, 0, 1],
+    [2, 7, 9, 3, 8, 0, 6, 4, 1, 5],
+    [7, 0, 4, 6, 9, 1, 3, 2, 5, 8],
+]
+
+
+def _verhoeff_ok(number: str) -> bool:
+    """True if the digit string passes the Verhoeff checksum (used by Aadhaar)."""
+    c = 0
+    for i, ch in enumerate(reversed(number)):
+        c = _VERHOEFF_D[c][_VERHOEFF_P[i % 8][int(ch)]]
+    return c == 0
+
+
+def validate_aadhaar(value):
+    """
+    12 digits, first digit 2-9, valid Verhoeff checksum.
+    Catches typing mistakes at entry time. If you need to load dummy numbers
+    for testing, relax the checksum branch.
+    """
+    value = (value or "").strip()
+    if not re.fullmatch(r"[2-9]\d{11}", value):
+        raise ValidationError(
+            _("Aadhaar number must be 12 digits and cannot start with 0 or 1.")
+        )
+    if not _verhoeff_ok(value):
+        raise ValidationError(
+            _("This Aadhaar number is not valid. Please check for a typing mistake.")
+        )
+
+
 class Employee(models.Model):
     """
     Employee model
@@ -76,6 +120,7 @@ class Employee(models.Model):
         ("married", _("Married")),
         ("divorced", _("Divorced")),
     )
+    adhar_number = models.CharField()
     badge_id = models.CharField(max_length=50, null=True, blank=True)
     employee_user_id = models.OneToOneField(
         HorillaUser,
@@ -94,8 +139,24 @@ class Employee(models.Model):
     employee_profile = models.ImageField(
         upload_to=upload_path, null=True, blank=True, verbose_name=_("Profile Image")
     )
-    email = models.EmailField(max_length=254, unique=True)
+    email = models.EmailField(max_length=254, unique=True, null=True, blank=True)
+    has_login = models.BooleanField(
+        default=True,
+        verbose_name=_("Can log in to system"),
+        help_text=_(
+            "Tick for managers, HR and anyone who uses the system. "
+            "Email is then required."
+        ),
+    )
     phone = models.CharField(max_length=25, validators=[phone_validator], null=True, blank=True)
+    aadhaar_number = models.CharField(
+        max_length=12,
+        unique=True,
+        null=True,
+        blank=True,
+        validators=[validate_aadhaar],
+        verbose_name=_("Aadhaar Number"),
+    )
     address = models.TextField(max_length=200, blank=True, null=True)
     country = models.CharField(max_length=100, blank=True, null=True)
     state = models.CharField(max_length=100, null=True, blank=True)
@@ -272,6 +333,78 @@ class Employee(models.Model):
         work_info = getattr(self, "employee_work_info", None)
         work_email = getattr(work_info, "email", None)
         return work_email if work_email is not None else self.email
+
+    def _normalize_identifiers(self):
+        """Empty strings become None so the unique constraints work on NULLs."""
+        self.email = (self.email or "").strip() or None
+        self.phone = (self.phone or "").strip() or None
+        self.aadhaar_number = re.sub(r"[\s-]", "", self.aadhaar_number or "") or None
+
+    def get_masked_aadhaar(self):
+        """XXXX XXXX 1234. Use this everywhere except the edit form."""
+        if not self.aadhaar_number:
+            return ""
+        return f"XXXX XXXX {self.aadhaar_number[-4:]}"
+
+    def _create_user_account(self):
+        """
+        Login staff: username = email, first password = phone (unchanged
+        behaviour). Non-login staff: throwaway username, unusable password,
+        no email. The user row still exists because employee_user_id is
+        referenced all over the codebase.
+        """
+        if self.has_login:
+            username = self.email
+            # Phone as first password only when there is a phone and Google is
+            # not the sole login method. Otherwise: unusable password (never the
+            # string "None").
+            password = (
+                str(self.phone)
+                if (
+                    self.phone and not getattr(settings, "GOOGLE_OAUTH_ONLY", False)
+                )  # noqa: F821
+                else None
+            )
+            user = HorillaUser.objects.create_user(  # noqa: F821
+                username=username,
+                email=username,
+                password=password,
+                is_new_employee=True,
+            )
+            if not user:
+                user = HorillaUser.objects.create_user(  # noqa: F821
+                    username=username, email=username, password=password
+                )
+            return user
+
+        user = HorillaUser.objects.create_user(  # noqa: F821
+            username=f"nologin-{uuid.uuid4().hex[:16]}", email="", password=None
+        )
+        user.set_unusable_password()
+        user.save(update_fields=["password"])
+        return user
+
+    def _sync_user_login_state(self):
+        """Keep the Django user in step when has_login is flipped later."""
+        user = self.employee_user_id
+        if user is None:
+            return
+        if self.has_login and not user.has_usable_password():
+            # promoted from non-login to login
+            user.username = self.email
+            user.email = self.email
+            if self.phone and not getattr(
+                settings, "GOOGLE_OAUTH_ONLY", False
+            ):  # noqa: F821
+                user.set_password(str(self.phone))
+                user.is_new_employee = True  # forced password change on first login
+            else:
+                user.set_unusable_password()  # Google-only
+            user.save()
+        elif not self.has_login and user.has_usable_password():
+            # demoted: revoke the password, keep the account row
+            user.set_unusable_password()
+            user.save(update_fields=["password"])
 
     def get_email(self):
         return self.get_mail()
@@ -679,15 +812,13 @@ class Employee(models.Model):
         return (next_birthday - today).days
 
     def get_last_sent_mail(self):
-        """
-        This method is used to get last send mail
-        """
         from base.models import EmailLog
 
+        mail = self.get_mail()
+        if not mail:
+            return None
         return (
-            EmailLog.objects.filter(to__icontains=self.get_mail())
-            .order_by("-created_at")
-            .first()
+            EmailLog.objects.filter(to__icontains=mail).order_by("-created_at").first()
         )
 
     def get_subordinate_employees(self):
@@ -726,76 +857,63 @@ class Employee(models.Model):
     def clean(self):
         super().clean()
 
-        file = self.employee_profile
-        if not file:
-            return
+        self._normalize_identifiers()
+        errors = {}
 
-        # Committed = already saved to storage; unreadable path → don't block saves.
-        committed = getattr(file, "committed", False)
-        same_as_db = self._employee_profile_path_matches_db(file)
+        if self.has_login:
+            # Phone is optional: Google-only managers need just the email.
+            if not self.email:
+                errors["email"] = _("Email is required for users who can log in.")
+        elif not self.aadhaar_number:
+            errors["aadhaar_number"] = _(
+                "Aadhaar number is required for staff without a login."
+            )
 
-        try:
-            file.seek(0)
-            content = file.read()
-        except Exception:
-            if committed or same_as_db:
-                return
-            raise ValidationError({"employee_profile": "Unable to read uploaded file."})
+        # The username must be free whenever we are about to create or
+        # upgrade a login account.
+        user = self.employee_user_id if self.employee_user_id_id else None
+        needs_account = user is None or not user.has_usable_password()
+        if self.has_login and self.email and needs_account and "email" not in errors:
+            taken = HorillaUser.objects.filter(username=self.email)  # noqa: F821
+            if user is not None:
+                taken = taken.exclude(pk=user.pk)
+            if taken.exists():
+                errors["email"] = _("This email is already used by another account.")
 
-        is_svg = False
-        try:
-            text = content.decode("utf-8", errors="strict")
-            root = ET.fromstring(text)
-            if root.tag.endswith("svg"):
-                is_svg = True
-        except Exception:
-            pass
-
-        if not is_svg:
-            try:
-                file.seek(0)
-                Image.open(file).verify()
-            except Exception:
-                if committed or same_as_db:
-                    return
-                raise ValidationError(
-                    {"employee_profile": "Invalid image or SVG file."}
-                )
+        if errors:
+            raise ValidationError(errors)
 
     def save(self, *args, **kwargs):
+        self._normalize_identifiers()  # NEW
         self.full_clean()
         super().save(*args, **kwargs)
 
-        request = getattr(horilla_middlewares._thread_locals, "request", None)
+        request = getattr(
+            horilla_middlewares._thread_locals, "request", None
+        )  # noqa: F821
         if request and not self.is_active and self.get_archive_condition() is not False:
             self.is_active = True
             super().save(*args, **kwargs)
         employee = self
 
         if employee.employee_user_id is None:
-            # Create user if no corresponding user exists
-            username = self.email
-            password = str(self.phone) if self.phone else None
-
-            user = HorillaUser.objects.create_user(
-                username=username,
-                email=username,
-                password=password,
-                is_new_employee=True,
-            )
-            if not user:
-                user = HorillaUser.objects.create_user(
-                    username=username, email=username, password=password
-                )
+            user = self._create_user_account()
             self.employee_user_id = user
-            # default permissions
-            change_ownprofile = Permission.objects.get(codename="change_ownprofile")
-            view_ownprofile = Permission.objects.get(codename="view_ownprofile")
+            change_ownprofile = Permission.objects.get(
+                codename="change_ownprofile"
+            )  # noqa: F821
+            view_ownprofile = Permission.objects.get(
+                codename="view_ownprofile"
+            )  # noqa: F821
             user.user_permissions.add(view_ownprofile)
             user.user_permissions.add(change_ownprofile)
+        else:
+            self._sync_user_login_state()  # NEW
 
         if not hasattr(self, "employee_work_info"):
-            EmployeeWorkInformation.objects.get_or_create(employee_id=self)
+            EmployeeWorkInformation.objects.get_or_create(
+                employee_id=self
+            )  # noqa: F821
             return self.save()
 
         return self
